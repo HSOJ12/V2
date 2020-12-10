@@ -9,18 +9,18 @@ brain Brain;
 controller Controller1 = controller (primary);
 
 //Front Intake
-motor MotorIntakeR = motor (PORT9);
-motor MotorIntakeL = motor (PORT12);
+motor IntakeRBottom = motor (PORT9);
+motor IntakeLBottom = motor (PORT12);
 
 //Top Intake
-motor MotorR = motor (PORT16);
-motor MotorL = motor (PORT1);
+motor IntakeRTop = motor (PORT16);
+motor IntakeLTop = motor (PORT1);
 
 //Drive Base
-motor FrontRightDrive = motor (PORT19);
-motor BackRightDrive = motor (PORT15);
-motor FrontLeftDrive = motor (PORT11);
-motor BackLeftDrive = motor (PORT13);
+motor DriveRFront = motor (PORT19);
+motor DriveRBack = motor (PORT15);
+motor DriveLFront = motor (PORT11);
+motor DriveLBack = motor (PORT13);
 
 //Sensors
 encoder DistanceEncoder = encoder (Brain.ThreeWirePort.A);
@@ -67,7 +67,7 @@ void usercontrol()
   //True False Code
   //bool SensorsOn = true;
   //bool ToggleSensors = false;
-  int TurnVelocity = 0;
+  //int TurnVelocity = 0;
   int ForwardVelocity = 0;
 
   while (true) 
@@ -87,78 +87,83 @@ void usercontrol()
     //Top Intake
     if (abs(Controller1.Axis2.position(percentUnits::pct)) > 10)
     {
-      MotorR.spin (directionType::fwd, Controller1.Axis2.position(percentUnits::pct), velocityUnits::pct);
-      MotorL.spin (directionType::fwd, -Controller1.Axis2.position(percentUnits::pct), velocityUnits::pct);
+      IntakeRTop.spin (directionType::fwd, Controller1.Axis2.position(percentUnits::pct), velocityUnits::pct);
+      IntakeLTop.spin (directionType::fwd, -Controller1.Axis2.position(percentUnits::pct), velocityUnits::pct);
     }
     else
     {
-      MotorR.stop (brakeType::coast);
-      MotorL.stop (brakeType::coast);
+      IntakeRTop.stop (brakeType::coast);
+      IntakeLTop.stop (brakeType::coast);
     }
     //
 
     //Front Intake
     if (Controller1.ButtonR1.pressing() == true)
     {
-      MotorIntakeR.spin (directionType::fwd, -100, velocityUnits::pct);
-      MotorIntakeL.spin (directionType::fwd, 100, velocityUnits::pct);
+      IntakeRBottom.spin (directionType::fwd, -100, velocityUnits::pct);
+      IntakeRBottom.spin (directionType::fwd, 100, velocityUnits::pct);
     }
     else if (Controller1.ButtonR2.pressing() == true)
     {
-      MotorIntakeR.spin (directionType::fwd, 100, velocityUnits::pct);
-      MotorIntakeL.spin (directionType::fwd, -100, velocityUnits::pct);
+      IntakeRBottom.spin (directionType::fwd, 100, velocityUnits::pct);
+      IntakeLBottom.spin (directionType::fwd, -100, velocityUnits::pct);
     }
     else
     {
-      MotorIntakeR.stop (brakeType::coast);
-      MotorIntakeL.stop (brakeType::coast);
+      IntakeRBottom.stop (brakeType::coast);
+      IntakeLBottom.stop (brakeType::coast);
     }
     //
 
     if (ForwardVelocity < Controller1.Axis3.position(percentUnits::pct))
     {
-      ForwardVelocity += 10;
-      task::sleep (100);
+      ForwardVelocity += 1;
+      this_thread::sleep_for(100);
     }    
     else if (ForwardVelocity > Controller1.Axis3.position(percentUnits::pct))
     {
-      ForwardVelocity -= 10;
-      task::sleep (1000);
+      ForwardVelocity -= 1;
+      this_thread::sleep_for(100);
+    }
+    else if (ForwardVelocity == Controller1.Axis3.position(percentUnits::pct))
+    {
+        ForwardVelocity = Controller1.Axis3.position(percentUnits::pct);
+        this_thread::sleep_for(100);
     }
     else 
     {
       ForwardVelocity = 0;
     }
 
-    if (TurnVelocity < Controller1.Axis4.position(percentUnits::pct))
+    /*if (TurnVelocity < Controller1.Axis4.position(percentUnits::pct))
     {
-      TurnVelocity += 10;
+      TurnVelocity += 1;
       task::sleep (100);
     }
     else if (TurnVelocity > Controller1.Axis4.position(percentUnits::pct))
     {
-      TurnVelocity -= 10;
-      task::sleep (1000);
+      TurnVelocity -= 1;
+      task::sleep (100);
     }
     else 
     {
       TurnVelocity = 0;
-    }
+    }*/
 
     //Drive Base
     if (abs(Controller1.Axis3.position(percentUnits::pct)) + abs(Controller1.Axis4.position(percentUnits::pct)) > 10)
     { 
-      FrontRightDrive.spin (directionType::fwd, -ForwardVelocity + TurnVelocity, velocityUnits::pct);
-      BackRightDrive.spin (directionType::fwd, -ForwardVelocity + TurnVelocity, velocityUnits::pct);
-      FrontLeftDrive.spin (directionType::fwd, ForwardVelocity + TurnVelocity, velocityUnits::pct);
-      BackLeftDrive.spin (directionType::fwd, ForwardVelocity + TurnVelocity, velocityUnits::pct);
+      DriveRFront.spin (directionType::fwd, -ForwardVelocity + Controller1.Axis4.position(percentUnits::pct), velocityUnits::pct);
+      DriveRBack.spin (directionType::fwd, -ForwardVelocity + Controller1.Axis4.position(percentUnits::pct), velocityUnits::pct);
+      DriveLFront.spin (directionType::fwd, ForwardVelocity + Controller1.Axis4.position(percentUnits::pct), velocityUnits::pct);
+      DriveLBack.spin (directionType::fwd, ForwardVelocity + Controller1.Axis4.position(percentUnits::pct), velocityUnits::pct);
     }
     else
     {
-      FrontRightDrive.stop (brakeType::coast);
-      BackRightDrive.stop (brakeType::coast);
-      FrontLeftDrive.stop (brakeType::coast);
-      BackLeftDrive.stop (brakeType::coast);
+      DriveRFront.stop (brakeType::coast);
+      DriveRBack.stop (brakeType::coast);
+      DriveLFront.stop (brakeType::coast);
+      DriveLBack.stop (brakeType::coast);
     }
     //
     
